@@ -1,0 +1,85 @@
+
+TODO:
+ * add to world_seed (universe expansion)
+ * map: try highlighting 'current' location
+ * map: add icons to map nodes based on location contents
+ * map: hide undiscovered map nodes
+ * map: show connections between map nodes
+ * design Q: how does 2d map interact with 'current location' of ships
+ * support for multiple user-owned ships
+ * add consume-only "retail" agents? -> and/or trade stations
+ * corporations (player, NPC)
+ * idea: add action timer for warping to new location
+ * idea: template-random universe generation
+ * idea: implement government taxing system
+ 	- implement tax discounts
+
+8/3/2014
+ * utility: added 'export' to menu, can now get JSON of saved game into clipboard
+ * optimize: make world_seed same format as serialized game, load from serialized world_seed
+ * WIP: started system map (using mapview.html instead of index for experimental work)
+
+8/2/2014
+ * save/resume world state
+ 		- http://diveintohtml5.info/storage.html
+
+7/31/2014
+ * optimize: move main.js code into GalaxySim
+ * implemented Service.get("galaxy") instead of window.galaxy
+ * adding toJson functions in preperation of save/resume
+
+7/30/2014
+ * add 10% factory incentives for inputs with zero Qty
+ * fix: trade prices need to be fixed at CommodityType.getAvgTradeValue()
+ * optimize: convert to dictionary for FactoryType/FactoryModel input/output(+storage)
+
+7/29/2014
+ * implement TradeDialog to buy/sell from stations
+
+7/28/2014
+ * implement StationModel (todo: periodic consume)
+ * implement StationView
+
+7/27/2014
+ * ui refinements to use less space
+ * optimize: have view classes inherit from common base class for getDiv and setTarget
+ * add PlayerHud ui
+ 	- ui: show player balance
+ * add MenuView
+  - moved pause functionality to menu (removed hack button)
+ * optimize: remove unnecessary calls to jQuery
+
+7/26/2014
+ * fix: remove cmdy with qty 0 from vesselModel._cargo
+ * fix: int qty values becoming corrupted over time
+ * implement user-controlled agent/vessel
+ * merge SellDialog into PurchaseDialog, only need one class
+
+7/25/2014
+ * implement UI to buy/sell/move
+
+7/23/2014
+ * fixed: views not updating correctly when vessels moved location
+
+7/22/2014
+ * implement agent travel between locations
+ * implement agents to buy/sell
+ - implement commodity-specific reseller AIs
+ * in progress: agent buy/sell logic
+
+7/21/2014
+ * implement vessel view
+ * implemented world_seed.json to load initial world from
+ * implemented stargates for vessels to travel between locations
+ * implemented UI for switching between locations
+
+7/20/2014
+ * implemented locations
+ * implemented location view class
+
+7/19/2014
+ * factory UI animated, simulation pumping factory queues
+ - using hacked code to distribute outputs to other factory inputs
+
+7/18/2014
+ * commodity ui and commodity and factory models

@@ -1,0 +1,27 @@
+var data = {
+  "commodityTypes" : {
+    "cmdyEcell" : { "id":"cmdyEcell", "name":"Ecell", "minVal":10, "maxVal":20 },
+    "cmdyOreT1" : { "id":"cmdyOreT1", "name":"Ore T1", "minVal":5, "maxVal":50 },
+		"cmdyOreT2" : { "id":"cmdyOreT2", "name":"Ore T2", "minVal":50, "maxVal":500 },
+		"cmdyBioT1" : { "id":"cmdyBioT1", "name":"Grains", "minVal":1, "maxVal":10 },
+		"cmdyBioT2" : { "id":"cmdyBioT2", "name":"Livestock", "minVal":2, "maxVal":25 },
+		"cmdyBioT3" : { "id":"cmdyBioT3", "name":"Pharmaceuticals", "minVal":50, "maxVal":500 },
+    "cmdyCosmetics" : { "id":"cmdyCosmetics", "name":"Cosmetics", "minVal":50, "maxVal":500 },
+		"cmdyConstMats" : { "id":"cmdyConstMats", "name":"Construction Materials", "minVal":5, "maxVal":50 }
+  },
+  "factoryTypes" : {
+		"ftEcell_solar1" : { "id":"ftEcell_solar1", "name":"Solar Plant",  "outputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":10, "maxQty":1000}}, "processTime":4.0 },
+    "ftOreT1_forge1" : { "id":"ftOreT1_forge1", "name":"T1 Ore Forge", 	"inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":1,  "maxQty":1000}}, "outputs":{"cmdyOreT1":{"cid":"cmdyOreT1","qty":10, "maxQty":10000}}, "processTime":15.0 },
+    "ftOreT2_forge1" : { "id":"ftOreT2_forge1", "name":"T2 Ore Forge", 	"inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":10, "maxQty":1000}}, "outputs":{"cmdyOreT2":{"cid":"cmdyOreT2","qty":1, "maxQty":1000}}, "processTime":15.0 },
+		"ftBioT1_farm1"  : { "id":"ftBioT1_farm1", "name":"Grain Farm", 		"inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":10, "maxQty":1000}}, "outputs":{"cmdyBioT1":{"cid":"cmdyBioT1","qty":100, "maxQty":10000}}, "processTime":20.0 },
+		"ftBioT2_ranch1" : { "id":"ftBioT2_ranch1", "name":"Cattle Ranch", 	"inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":10, "maxQty":1000}}, "outputs":{"cmdyBioT2":{"cid":"cmdyBioT2","qty":100, "maxQty":10000}}, "processTime":30.0 },
+		"ftBioT3_lab1" 	 : { "id":"ftBioT3_lab1", "name":"Rx Laboratory", 	"inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":10, "maxQty":1000},"cmdyOreT2":{"cid":"cmdyOreT2","qty":1, "maxQty":100}}, "outputs":{"cmdyBioT3":{"cid":"cmdyBioT3","qty":5, "maxQty":1000}}, "processTime":30.0 },
+		"ftCosmetics" : { "id":"ftCosmetics", "name":"Adriana's Cosmetics", "inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":1,  "maxQty":1000},"cmdyOreT2":{"cid":"cmdyOreT2","qty":1, "maxQty":100}}, "outputs":{"cmdyCosmetics":{"cid":"cmdyCosmetics","qty":10, "maxQty":10000}}, "processTime":15.0 },
+		"ftConstFab"  : {"id":"ftConstFab", "name":"Construction Fabrications", "inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":1, "maxQty":1000},"cmdyOreT1":{"cid":"cmdyOreT1","qty":10, "maxQty":10000}}, "outputs":{"cmdyConstMats":{"cid":"cmdyConstMats","qty":100, "maxQty":10000}}, "processTime":6.0 }
+  },
+  "vesselTypes" : {
+    "vtFFt1" : { "id":"vtFFt1", "name":"Firefly FFt1", "speed":10, "cargoVol":100 },
+    "vtMLsG" : { "id":"vtMLsG", "name":"Megolith SG", "speed":1, "cargoVol":10000 },
+    "vtPCvc" : { "id":"vtPCvc", "name":"Corvette Pvc", "speed":100, "cargoVol":5 }
+  }
+}
