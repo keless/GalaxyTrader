@@ -8,7 +8,7 @@
 
 var LocationModel = Class.create(EventBus, {
   initialize: function( $super ) {
-    $super(); //initialize EventBus
+    $super("LocationModel"); //initialize EventBus
     this.name = "";
     this.id = "";
     this.factories = {};

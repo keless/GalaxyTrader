@@ -81,6 +81,7 @@ var PlayerHud = Class.create({
     agentModel.addListener("agentUpdateCredits", this.onAgentCreditsUpdated.bind(this) );
   },
 	onAgentCreditsUpdated: function( evt ) {
+		console.log("update credits");
 		this.setCredits( this.updateTarget.getNumCredits() );
 	}
 })
