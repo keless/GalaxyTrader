@@ -40,7 +40,7 @@ VesselType.loadTypesWithJson = function( json )
 
 var VesselModel = Class.create(EventBus, {
   initialize: function( $super ){
-    $super(); //initialize EventBus
+    $super("VesselModel"); //initialize EventBus
     this.type = null;
     this.name = "";
 		this.owner = null;

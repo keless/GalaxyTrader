@@ -8,7 +8,7 @@
 
 var AgentModel = Class.create(EventBus, {
   initialize: function($super){
-		$super();
+		$super("AgentModel");
     this.vessel = null;
     this.name = "Peabody Humperdink";
     this.id = "";

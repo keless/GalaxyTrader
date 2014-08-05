@@ -6,7 +6,7 @@
 
 var StationModel = Class.create(EventBus, {
   initialize: function( $super ) {
-    $super(); //initialize EventBus
+    $super("StationModel"); //initialize EventBus
     this.name = "";
     this.id = "";
 		this.owner = null;

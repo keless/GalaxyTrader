@@ -1,18 +1,25 @@
 
 TODO:
+ * automatic periodic game_save -- basically, persistence
  * add to world_seed (universe expansion)
- * map: try highlighting 'current' location
  * map: add icons to map nodes based on location contents
  * map: hide undiscovered map nodes
  * map: show connections between map nodes
- * design Q: how does 2d map interact with 'current location' of ships
+ * gameplay: add travel time between galaxy systems
  * support for multiple user-owned ships
+ 		- player hud shows drop-down of user-agent selectable assets
  * add consume-only "retail" agents? -> and/or trade stations
  * corporations (player, NPC)
- * idea: add action timer for warping to new location
  * idea: template-random universe generation
  * idea: implement government taxing system
  	- implement tax discounts
+
+8/4/2014
+ * design Q: how does 2d map interact with 'current location' of ships
+ 		- shows highlight of current 'active agent' location
+ * ui: placed map view and location view side-by-side
+ * optimize: refactored some main.js code
+ * map: highlighting 'current' location
 
 8/3/2014
  * utility: added 'export' to menu, can now get JSON of saved game into clipboard

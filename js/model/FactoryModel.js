@@ -59,7 +59,7 @@ FactoryType.loadTypesWithJson = function( json )
 
 var FactoryModel = Class.create(EventBus, {
   initialize: function( $super ) {
-    $super(); //initialize EventBus
+    $super("FactoryModel"); //initialize EventBus
     this.type = null;
     this.name = "";
     this.id = "";

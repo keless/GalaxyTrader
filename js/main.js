@@ -1,4 +1,4 @@
-game_init = function()
+game_create = function()
 {
 	//LOAD DATA
   CommodityType.loadTypesWithJson( data["commodityTypes"] );
@@ -48,8 +48,10 @@ game_init = function()
   EventBus.game.addListener("destination", window.onDestinationRcv.bind(window));
 
   window.clearView = function() {
-    window.currentLocationView.destroy();
-    window.currentLocationView = null;
+		if(!window.currentLocationView) return;
+
+		window.currentLocationView.destroy();
+		window.currentLocationView = null;
 
     //save the event handlers attached to these from being removed by jQuery.empty();
     window.hud.getDiv().detach();
@@ -256,29 +258,27 @@ game_load = function()
 {
 	console.log("load data from local storage")
 	var json = JSON.parse( localStorage.getItem("save") );
-	var galaxy = new GalaxySim();
-	galaxy.initializeWithJson( json["galaxy"] );
-	window.galaxy = galaxy;
 
-  window.map.initializeWithGalaxySim( galaxy );
-
-	//clear view
-	window.clearView();
-	window.currentLocation = json["ui"]["currentLocation"];
-	window.createView();
+	game_init( json );
 }
 
 game_fresh = function()
 {
+	game_init( world_seed );
+}
+
+game_init = function( seed )
+{
 	var galaxy = new GalaxySim();
-	galaxy.initializeWithJson( world_seed["galaxy"] );
+	galaxy.initializeWithJson( seed["galaxy"] );
 	window.galaxy = galaxy;
 
-  window.hud.updateFromModel( galaxy.activeUserAgent );
+  window.hud.updateFromModel( galaxy.activeUserAgent, true );
   window.map.initializeWithGalaxySim( galaxy );
 
 	//create view
-	window.currentLocation = world_seed["ui"]["currentLocation"];
+	window.clearView();
+	window.currentLocation = seed["ui"]["currentLocation"];
 	window.createView();
 }
 
