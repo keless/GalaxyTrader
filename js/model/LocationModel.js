@@ -13,7 +13,7 @@ var LocationModel = Class.create(EventBus, {
     this.id = "";
     this.factories = {};
     this.stations = {};
-    this.visitors = {};
+    this.vessels = {};
     this.destinations = [];
 		this.coords = {x:0, y:0};
 
@@ -27,11 +27,13 @@ var LocationModel = Class.create(EventBus, {
 		this.coords = json["loc"] || this.coords;
 
     var blockThis = this;
+    if(json["factories"]) {
     jQuery.each(json["factories"], function(key, val){
       var factory = new FactoryModel();
       factory.initializeWithJson( val );
       blockThis.addFactory(factory);
     });
+    }
 
     if( json["stations"] ) {
     jQuery.each(json["stations"], function(key, val){

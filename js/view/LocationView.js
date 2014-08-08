@@ -22,7 +22,7 @@ var makeAccordionContent = function( accordionId, strTitle ) {
 var LocationView = Class.create(BaseView, {
   initialize: function($super) {
 		$super();
-		this.div = jQuery("<div>", {"class":"tg-box", width:"98%"}); //note: class here is the HTML-element-class
+    this.div = jQuery("<div>", {"class":"tg-box", width:"720px", height:"720px"}); //note: class here is the HTML-element-class
     this.lblName = jQuery("<p>", {"class":"labelName tg-name"});
     this.div.append(this.lblName);
 

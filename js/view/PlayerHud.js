@@ -44,10 +44,18 @@ var PlayerHud = Class.create({
 											{ name: "Resume", evt:"menuResume" }
 										]
 									},
+                  {
+                    name: "Create",
+                    opts:[
+                      { name: "Location", evt:"menuCreateLocation" },
+                      { name: "Destination", evt:"menuCreateDestination" },
+                      { name: "Factory", evt:"menuCreateFactory" },
+                      { name: "Station", evt:"menuCreateStation" }
+                    ]
+                  },
 									{ name: "-"},
-									{ name: "Save Game", evt:"menuSaveGame" },
-									{ name: "Load Game", evt:"menuLoadGame" },
 									{ name: "Export", evt:"menuExportGame" },
+                  { name: "Import", evt:"menuImportGame" },
 									{	name: "Nuke", evt:"menuNuke", icon:"ui-icon-power" }
 					]}
 				]
@@ -72,7 +80,7 @@ var PlayerHud = Class.create({
 	},
   setUpdateTarget: function( agentModel ) {
     if( this.updateTarget != null ) {
-      this.updateTarget.removeListener("agentUpdateCredits", this.onVesselAdded.bind(this) );
+      this.updateTarget.removeListener("agentUpdateCredits", this.onAgentCreditsUpdated.bind(this) );
 		}
 
 		this.updateTarget = agentModel;

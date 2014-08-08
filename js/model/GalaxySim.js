@@ -32,6 +32,9 @@ var GalaxySim = Class.create({
     this.lastAgentProcessTime = 0;
     this.agentProcessPeriod = 5; //Secs
 
+		this.lastSaveTime = 0;
+		this.autoSavePeriod = 3;
+
     this._allVessels = {};
 
 		this.gameTime = 0; //Secs
@@ -138,7 +141,16 @@ var GalaxySim = Class.create({
 
       this.lastAgentProcessTime = this.gameTime;
     }
+
+		if( this.gameTime > this.lastSaveTime + this.autoSavePeriod ) {
+			EventBus.game.dispatch({evtName:"requestSaveGame"});
+			this.lastSaveTime = this.gameTime;
+		}
   },
+
+	canUserTravelTo: function( locId ) {
+
+	},
 
   // vesselId, locationId, factoryId, commodityId, quantity, pricePerUnit, sellingAgentModel
   actionSellFromVesselToFactory: function( vid, lid, fid, cid, qty, ppu, sellAgent )

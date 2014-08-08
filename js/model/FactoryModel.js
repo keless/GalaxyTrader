@@ -28,7 +28,7 @@ var FactoryType = Class.create({
 		this.outputs = {}; //{ "cid" : <str commodityTypeId>, "qty":<int quantity>, "maxQty":<int max> }
     this.processTime = 0;
   },
-  g_types : [],
+  g_types : {},
   initializeWithJson: function( json ) {
     this.name = json["name"] || "";
     this.id = json["id"] || "invalid_idj";

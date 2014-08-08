@@ -9,7 +9,7 @@ var CommodityType = Class.create({
     this.minVal = 0;
     this.maxVal = 0;
   },
-  g_types : [],
+  g_types : {},
   initializeWithJson: function(json) {
     this.name = json["name"]  || "";
     this.id = json["id"]  || "undefined_idj";

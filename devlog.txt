@@ -1,11 +1,9 @@
 
 TODO:
- * automatic periodic game_save -- basically, persistence
- * add to world_seed (universe expansion)
- * map: add icons to map nodes based on location contents
+ * menu: create station (refactor: need station Types)
  * map: hide undiscovered map nodes
- * map: show connections between map nodes
- * gameplay: add travel time between galaxy systems
+ * add to world_seed (universe expansion)
+ * gameplay: add travel time between galaxy systems?
  * support for multiple user-owned ships
  		- player hud shows drop-down of user-agent selectable assets
  * add consume-only "retail" agents? -> and/or trade stations
@@ -13,6 +11,30 @@ TODO:
  * idea: template-random universe generation
  * idea: implement government taxing system
  	- implement tax discounts
+
+8/8/2014
+ * menu: create -> factory
+ * implemented FormDialog
+   - support for text, strInput, intInput, labels, select
+
+8/7/2014
+ * menu: create -> destination
+ * menu: create -> location
+ * implemented TextAreaDialog (generic dialog with text area content) - for import/export
+ * menu: import
+ * menu: export
+ * fixed graphic issues with map node scaling
+ * fixed Nuke bug
+ * refactor: implemented PlayerModel in anticipation of 'known universe' feature
+
+8/6/2014
+ * map: right click adjacent map nodes causes travel to
+ * map: add icons to map nodes based on location contents
+ * map: show connections between map nodes
+
+8/5/2014
+ * automatic periodic game_save -- basically, persistence
+ * nuke game (has bug, but after refresh works) -- fixed 8/7
 
 8/4/2014
  * design Q: how does 2d map interact with 'current location' of ships
