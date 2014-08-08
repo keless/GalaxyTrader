@@ -47,53 +47,15 @@ var svgLineBetweenPts = function( x1, y1, x2, y2, r,g,b )
 	return div;
 }
 
-var MapNode = Class.create(BaseView, {
-	initialize: function($super) {
-		$super();
-		this.origX = 0;
-		this.origY = 0;
-		this.w = 100;
-		this.h = 100;
+var DotNode = Class.create(BaseView, {
+	initialize: function( worldX, worldY ) {
+		this.div = jQueryIcon("ui-icon-radio-off").addClass("tg-map-node").css({top:100, left:100, "z-index":2 });
+		this.origX = worldX;
+		this.origY = worldY;
+		this.w = 10;
+		this.h = 10;
 		this.w_h = this.w/2;
 		this.h_h = this.h/2;
-		this.isHighlighted = false;
-		this.div = jQuery("<div>", {"class":"tg-box tg-map-node", width:this.w, height:this.h});
-    this.lblName = jQuery("<p>", {"class":"labelName tg-name"});
-    this.div.append(this.lblName);
-
-		this.lblName.text("location");
-
-		var blockThis = this;
-		this.div.click( function(evt){
-			evt.stopPropagation();
-			EventBus.ui.dispatch({evtName:"mapNodeClicked", node:blockThis});
-		});
-
-		EventBus.ui.addListener("MapNodeHighlight", this.onSiblingHighlighted.bind(this));
-	},
-	destroy: function($super) {
-		$super();
-		EventBus.ui.removeListener("MapNodeHighlight", this.onSiblingHighlighted.bind(this));
-
-	},
-	_updateFromModel: function( locModel ) {
-		this.origX = locModel.coords.x;
-		this.origY = locModel.coords.y;
-		this.lblName.text( locModel.name );
-		console.log("map node for " + locModel.name);
-	},
-	_attachTarget: function( target ) {
-		//nothing
-	},
-	setHighlighted: function( highlight ) {
-		if( highlight ) {
-			this.div.addClass("tg-border-hi-green");
-			this.isHighlighted = true;
-			EventBus.ui.dispatch({evtName:"MapNodeHighlight", node:this});
-		}else {
-			this.div.removeClass("tg-border-hi-green");
-			this.isHighlighted = false;
-		}
 	},
 	setScale: function( scale, animate ) {
 		if( animate ) {
@@ -113,23 +75,22 @@ var MapNode = Class.create(BaseView, {
 			TweenLite.to(this.div, 1, { left:x, top:y });
 		}else {
 			this.div.css({top:y, left:x});
+			//this.div.css("background-position-x",x);
+			//this.div.css("background-position-y",y);
 		}
 	},
 	getPos: function() {
 		var jqp = this.div.position();
 		var pos = { x:jqp.left, y:jqp.top };
 		return pos;
-	},
-
-	//Event handlers
-	onSiblingHighlighted: function(evt){
-		if( evt.node == this ) return;
-		if(this.isHighlighted) {
-			//turn off all other highlights
-			this.setHighlighted(false);
-		}
 	}
 });
+
+
+//fromto is unique per str1<->str2 pair
+var uniqueFromTo = function( str1, str2 ) {
+	return str1.localeCompare(str2) ? (str1+str2) : (str2+str1);
+}
 
 var MapView = Class.create(BaseView, {
 	initialize: function($super) {
@@ -143,7 +104,8 @@ var MapView = Class.create(BaseView, {
     this.div.append(this.lblName);
 
 		this.nodes = [];
-		this.lines = [];
+		this.dotNodes = [];
+		this.linkMap = {};
 		this.scroll = { x:-1*this.w_h, y:-1*this.h_h };
 
 		this.drag = null;
@@ -196,6 +158,9 @@ var MapView = Class.create(BaseView, {
 				blockThis.drag = null;
 			}
 		})
+		this.div.bind('contextmenu', function(e) {
+    	e.preventDefault();
+		});
 		this.lblName.text( "Universe" );
 
 		EventBus.ui.addListener("mapNodeClicked", this.onNodeClicked.bind(this));
@@ -203,13 +168,36 @@ var MapView = Class.create(BaseView, {
 	destroy: function($super) {
 		$super();
 
+		this.linkMap = {};
+
 		EventBus.ui.removeListener("mapNodeClicked", this.onNodeClicked.bind(this));
 
 		jQuery.each( this.nodes, function(key, value){
 			value.destroy();
 		});
+		this.nodes = [];
+
+		jQuery.each( this.dotNodes, function(key, value){
+			value.destroy();
+		});
+		this.dotNodes = [];
 	},
 	initializeWithGalaxySim: function( galaxy ) {
+
+		//clean up previous attachment
+		this.linkMap = {};
+		jQuery.each( this.nodes, function(key, value){
+			value.destroy();
+			value.getDiv().remove();
+		});
+		this.nodes = [];
+		jQuery.each( this.dotNodes, function(key, value){
+			value.destroy();
+			value.getDiv().remove();
+		});
+		this.dotNodes = [];
+		///
+
 		var blockThis = this;
 
     this.scrollMapTo( -1*this.w_h, -1*this.h_h); //center to zero-zero
@@ -221,9 +209,45 @@ var MapView = Class.create(BaseView, {
 			node.setPos( node.origX - blockThis.scroll.x, node.origY - blockThis.scroll.y );
 			blockThis.div.append( node.getDiv() );
 			blockThis.nodes.push( node );
+
+			var from = value.id;
+			var fromLoc = value;
+			jQuery.each(value.destinations, function(k, destId) {
+				var toLoc = Service.get("galaxy").getLocation( destId );
+				var to = toLoc.id;
+				var fromTo = uniqueFromTo(from, to);
+
+				blockThis.linkMap[ fromTo ] = { from:new Vec2D( fromLoc.coords.x, fromLoc.coords.y ), to:new Vec2D( toLoc.coords.x, toLoc.coords.y ) };
+			});
 		});
 
+		//todo: create link dots
+		jQuery.each(this.linkMap, function(key, value){
+			//from value.x1, value.y1;
+			//to value.x2, value.y2;
 
+			//1) calc dist
+			var dv = value.to.getVecSub( value.from );
+			var distance = dv.getMag();
+			//2) calc num dots
+			var targetDistPerSeg = 35;
+			var numSegs = Math.floor(distance / targetDistPerSeg);
+			var numDots = numSegs - 1; //dont do dot at first or last end
+			var distPerSegment = distance / numSegs;
+			//3) create dots along path
+			//3.1) unitize from->to vector
+			dv = dv.getUnitized();
+			//3.2) multiply (3.1) by dist/numDots;
+			for( var idx = 1; idx < numDots; idx++ ) { //start at 1 to skip first dot
+				//3.3) for(numDots: i ) create dot at from + (3.2) * i
+				var pos = value.from.getVecAdd( dv.getScalarMult( idx * distPerSegment ) );
+				var dot = new DotNode( pos.x, pos.y );
+        dot.setPos( dot.origX - blockThis.scroll.x, dot.origY - blockThis.scroll.y );
+				blockThis.div.append( dot.getDiv() );
+				blockThis.dotNodes.push( dot );
+			}
+
+		});
 	},
   setCurrentLocation: function( locModel ) {
     var blockThis = this;
@@ -257,9 +281,11 @@ var MapView = Class.create(BaseView, {
 		var cx = this.w_h;
 		var cy = this.h_h;
 
+    var margin = 20;
+
 		//update existing nodes
 		var blockThis = this;
-		jQuery.each( this.nodes, function(idx, value){
+		jQuery.each( this.nodes.concat(this.dotNodes) , function(idx, value){
 			var nx = value.origX;// + blockThis.w_h;
 			var ny = value.origY;// + blockThis.h_h;
 
@@ -274,15 +300,15 @@ var MapView = Class.create(BaseView, {
 			//clip to inside of view area  all sides
 			var x = nx - blockThis.scroll.x;
 			var y = ny - blockThis.scroll.y;
-			if( x < value.w_h ) x = value.w_h;
-			if( x >= blockThis.w - value.w ) x = blockThis.w - value.w;
-			if( y < value.h_h ) y = value.h_h;
-			if( y >= blockThis.h - value.h ) y = blockThis.h - value.h;
+			if( x < margin ) x = margin;
+			if( x >= blockThis.w - margin ) x = blockThis.w - margin;
+			if( y < margin ) y = margin;
+			if( y >= blockThis.h - margin ) y = blockThis.h - margin;
 			value.setPos( x - value.w_h, y - value.h_h, true );
-
 
 			value.setScale( scale, true );
 		});
+
 
 		this.lblName.text( "Universe (" + (this.scroll.x + this.w_h )+","+ (this.scroll.y+this.h_h)+")");
 	},
