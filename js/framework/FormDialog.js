@@ -19,8 +19,6 @@ elements:[
 ]
 }
 
-//TODO: add select dropdown type
-
 events sent
 ui:<successEvtName>: { dialog:this, text: someText }
 ui:"DialogCancel": { dialog:this }
@@ -52,14 +50,8 @@ var FormDialog = Class.create({
 					div = jQuery("<p>"+value.value+"</p>");
 					break;
 				case "select":
-					var selectHtml = "<select>";
-					jQuery.each(value.values, function(selIdx, selValue){
-						var selText = selValue.value;
-						if( selValue["text"] ) selText = selValue.text;
-						selectHtml += "<option value='"+selValue.value+"'>"+selText+"</option>";
-					});
-					selectHtml += "</select>";
-					div = jQuery(selectHtml);
+
+					div = create_select_div(value.values)
 					break;
 				case "intInput":
 				case "strInput":

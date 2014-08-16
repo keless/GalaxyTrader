@@ -5,6 +5,10 @@ var Vec2D = Class.create({
 		this.x = x;
 		this.y = y;
 	},
+	initializeWithPos: function( posObj ) {
+		this.x = posObj.x;
+		this.y = posObj.y;
+	},
 	getUnitized: function() {
 		var mag = this.getMag();
 		return new Vec2D( this.x / mag, this.y / mag );

@@ -19,9 +19,14 @@ var data = {
 		"ftCosmetics" : { "id":"ftCosmetics", "name":"Adriana's Cosmetics", "inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":1,  "maxQty":1000},"cmdyOreT2":{"cid":"cmdyOreT2","qty":1, "maxQty":100}}, "outputs":{"cmdyCosmetics":{"cid":"cmdyCosmetics","qty":10, "maxQty":10000}}, "processTime":15.0 },
 		"ftConstFab"  : {"id":"ftConstFab", "name":"Construction Fabrications", "inputs":{"cmdyEcell":{"cid":"cmdyEcell","qty":1, "maxQty":1000},"cmdyOreT1":{"cid":"cmdyOreT1","qty":10, "maxQty":10000}}, "outputs":{"cmdyConstMats":{"cid":"cmdyConstMats","qty":100, "maxQty":10000}}, "processTime":6.0 }
   },
+  "stationTypes" :  {
+    "stCGoods" : { "id":"stCGoods", "name":"Common Goods", "commodities":{"cmdyEcell":{"cid":"cmdyEcell","qty":10,"maxQty":1000},"cmdyOreT1":{"cid":"cmdyOreT1","qty":10, "maxQty":1000},"cmdyBioT1":{"cid":"cmdyBioT1","qty":100, "maxQty":1000} } },
+    "stT2Goods": { "id":"stT2Goods", "name":"Tier 2 Goods", "commodities":{ "cmdyOreT2":{"cid":"cmdyOreT2","qty":1, "maxQty":10}, "cmdyBioT2":{"cid":"cmdyBioT2","qty":100, "maxQty":100} } }
+  },
   "vesselTypes" : {
     "vtFFt1" : { "id":"vtFFt1", "name":"Firefly FFt1", "speed":10, "cargoVol":100 },
     "vtMLsG" : { "id":"vtMLsG", "name":"Megolith SG", "speed":1, "cargoVol":10000 },
     "vtPCvc" : { "id":"vtPCvc", "name":"Corvette Pvc", "speed":100, "cargoVol":5 }
   }
 }
+

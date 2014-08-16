@@ -28,7 +28,7 @@ var FactoryType = Class.create({
 		this.outputs = {}; //{ "cid" : <str commodityTypeId>, "qty":<int quantity>, "maxQty":<int max> }
     this.processTime = 0;
   },
-  g_types : {},
+  g_types: {},
   initializeWithJson: function( json ) {
     this.name = json["name"] || "";
     this.id = json["id"] || "invalid_idj";
@@ -144,7 +144,7 @@ var FactoryModel = Class.create(EventBus, {
 
 			offer.qtyAvailable = value.currQty;
 			offer.pricePerUnit = pricePerUnit;
-			console.log( "got amtsAvail for " + cid)
+			//console.log( "got amtsAvail for " + cid)
 		}
 
     return offer;
@@ -159,7 +159,7 @@ var FactoryModel = Class.create(EventBus, {
 
 			offer.qtyNeeded = value.maxQty - value.currQty;
 			offer.pricePerUnit = pricePerUnit;
-			console.log( "got amtsNeeded for " + cid)
+			//console.log( "got amtsNeeded for " + cid)
 		}
 
     return offer;

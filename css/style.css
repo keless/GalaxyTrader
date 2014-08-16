@@ -4,6 +4,16 @@
     margin: 3px;
 }
 
+.tg-sell
+{
+    cursor:url(css/images/bank.png) 15 15,auto;
+}
+
+.tg-buy
+{
+    cursor:url(css/images/symbol_dollar.png) 15 15,auto;
+}
+
 .tg-box
 {
     /* rounded corners */

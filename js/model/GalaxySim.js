@@ -14,28 +14,30 @@ guaranteed order of instantiation:
  2.1) LocationModel
  2.2) for each( loc.factories )
  2.2.1) FactoryModel
- 2.3) for each( loc.vessels )
- 2.3.1) VesselModel
- 3) for each( gxy.corporation )
+ 2.3) for each( loc.stations )
+ 2.3.1) StationModel
+ 2.4) for each( loc.vessels )
+ 2.4.1) VesselModel
+ 		- register in gxy._allVessels
+ 3) for each( gxy.corporations )
  3.1) CorpModel
- 3.2) for each( crp.agent ) //TODO: currently gxy.agents until i implement corps
+ 3.2) for each( crp.agent )
  3.2.1) AgentModel
+ 		- register in gxy._allAgents
+ 		- attach to vessel
 
 */
 
 var GalaxySim = Class.create({
   initialize : function() {
-    this.agents = {};
-    this.activeUserAgent = null;
     this.locations = {};
-
-    this.lastAgentProcessTime = 0;
-    this.agentProcessPeriod = 5; //Secs
+		this.corporations = {};
 
 		this.lastSaveTime = 0;
 		this.autoSavePeriod = 3;
 
     this._allVessels = {};
+		this._allAgents = {};
 
 		this.gameTime = 0; //Secs
 
@@ -47,27 +49,22 @@ var GalaxySim = Class.create({
 		var blockThis = this;
 
 		var locations = json["locations"];
+		if(locations) {
 		jQuery.each(locations, function(key,value){
 			var location = new LocationModel();
 			location.initializeWithJson(value);
 			blockThis.addLocation(location);
 		});
+		}
 
-		var agents = json["agents"];
-		jQuery.each(agents, function(key,value){
-			var agent;
-			if( value["isUserAgent"] ) {
-				agent = new UserAgentModel();
-				console.log("loaded user agent " + value.name)
-        blockThis.setActiveUserAgent( agent );
-			}else {
-				agent = new AgentModel();
-				console.log("loaded AI agent " + value.name)
-			}
-
-			agent.initializeWithJson(value);
-			blockThis.addAgent(agent);
-		});
+		var corporations = json["corporations"];
+		if(corporations) {
+			jQuery.each(corporations, function(key,value){
+				var corporation = new CorporationModel();
+				corporation.initializeWithJson(value);
+				blockThis.addCorporation(corporation);
+			});
+		}
 	},
 	toJson: function() {
 
@@ -76,13 +73,13 @@ var GalaxySim = Class.create({
 			locations[ value.id ] = value.toJson();
 		});
 
-		var agents = {}
-		jQuery.each(this.agents, function(key,value){
-			agents[ value.id ] = value.toJson();
+		var corporations = {};
+		jQuery.each(this.corporations, function(key,value){
+			corporations[ value.id ] = value.toJson();
 		});
 
 		var json = { gameTime:this.gameTime, locations:locations,
-								agents:agents };
+								corporations:corporations };
 		return json;
 	},
 
@@ -108,23 +105,32 @@ var GalaxySim = Class.create({
     return this._allVessels[ vesselId ];
   },
 
+  addCorporation: function( corporation ) {
+    if( corporation.id == "" ) {
+      console.log("invalid corporation id");
+      return;
+    }
+    this.corporations[ corporation.id ] = corporation;
+  },
+  getCorporation: function( corporationId ) {
+    return this.corporations[ corporationId ];
+  },
+
   addAgent: function( agent ) {
     if( agent.id == "" ) {
       console.log("invalid agent id");
       return;
     }
-    this.agents[ agent.id ] = agent;
+    this._allAgents[ agent.id ] = agent;
   },
-
-  setActiveUserAgent: function( agent ) {
-    this.activeUserAgent = agent;
-  },
+	getAgent: function( agentId ) {
+		return this._allAgents[ agentId ];
+	},
 
   //simulation functions
   update : function( stepDt ) {
 
 		this.gameTime += stepDt;
-		//console.log("game time step + "+stepDt+" = "+this.gameTime)
 
 		var blockThis = this;
     //update locations
@@ -132,25 +138,17 @@ var GalaxySim = Class.create({
       value.update( blockThis.gameTime, stepDt );
     });
 
-    //update agents
-    if( this.gameTime > this.lastAgentProcessTime + this.agentProcessPeriod ) {
-      //TODO: use less spikey interval processing
-      jQuery.each(this.agents, function(key, value){
-        value.update( blockThis.gameTime, stepDt );
-      });
+		//update corporations
+    jQuery.each(this.corporations, function(key, value){
+      value.update( blockThis.gameTime, stepDt );
+    });
 
-      this.lastAgentProcessTime = this.gameTime;
-    }
-
+		//check autoSavePeriod
 		if( this.gameTime > this.lastSaveTime + this.autoSavePeriod ) {
 			EventBus.game.dispatch({evtName:"requestSaveGame"});
 			this.lastSaveTime = this.gameTime;
 		}
   },
-
-	canUserTravelTo: function( locId ) {
-
-	},
 
   // vesselId, locationId, factoryId, commodityId, quantity, pricePerUnit, sellingAgentModel
   actionSellFromVesselToFactory: function( vid, lid, fid, cid, qty, ppu, sellAgent )
@@ -190,7 +188,7 @@ var GalaxySim = Class.create({
     var amtSold = factory.purchaseCommodityUnitsForSale(cid, qty, purchaseTotal);
     if( amtSold > 0 ) {
       //take cost and add cargo
-      vessel.addCargo( cid, amtSold );
+      vessel.addCargo( cid, amtSold, ppu );
 			buyAgent.incCredits( -1 * purchaseTotal ); //use negative to subtract
       if( amtSold != qty ) {
         console.log("WARNING: vessel bought "+amtSold+" from " + factory.name + " was expecting " + qty);
@@ -237,7 +235,7 @@ var GalaxySim = Class.create({
     var amtSold = station.purchaseCommodityUnitsForSale(cid, qty, purchaseTotal);
     if( amtSold > 0 ) {
       //take cost and add cargo
-      vessel.addCargo( cid, amtSold );
+      vessel.addCargo( cid, amtSold, ppu );
 			buyAgent.incCredits( -1 * purchaseTotal ); //use negative to subtract
       if( amtSold != qty ) {
         console.log("WARNING: vessel bought "+amtSold+" from " + station.name + " was expecting " + qty);

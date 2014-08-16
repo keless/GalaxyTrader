@@ -1,18 +1,64 @@
 
 TODO:
- * menu: create station (refactor: need station Types)
- * map: hide undiscovered map nodes
- * add to world_seed (universe expansion)
+ * AI: dont buy when price is above median (advanced: find a place to sell before buying)
+ * AI: consider trade stations for buy/sell actions too
+ * fix AI: can get stuck with expensive goods and nowhere to sell-- then what? (cut losses and sell to station?)
+ * UI: when hovering on factory name, mouse cursor = ?, if clicked open detail/info panel
+ * graphics: posterboard cutout figures with dialog
+ * graphics: ship and station images
+ * fix: clean up divs left by modal dialogs closing
  * gameplay: add travel time between galaxy systems?
- * support for multiple user-owned ships
- 		- player hud shows drop-down of user-agent selectable assets
- * add consume-only "retail" agents? -> and/or trade stations
- * corporations (player, NPC)
- * idea: template-random universe generation
+ * idea: inter-cluster worm holes as paid toll gates
+ * idea: factions
+ 		- show faction zone indicators on map
  * idea: implement government taxing system
  	- implement tax discounts
+ * improvement: implement name registry to ensure uniqueness
+ * improvement: give commodity descriptions, show tooltip when hovering?
+
+NOTE: crammit -c crammit.yaml
+
+8/16/2014
+ * UI: when changing active agent, move location to that agent
+ * AI: only sell at >= value
+ * fix: FTUE step 2 triggered twice
+ * fix: menuCreateVessel - vessel view missing agent name (shows up after refresh)
+
+8/15/2014
+ * fix: negative cargo qty
+
+8/14/2014
+ * AI: store value of commodities bought
+ * ui: added buy/sell/trade cursor icons when hovering over factory/station goods
+
+8/11/2014
+ * THE REMAKING
+ 		- FTUE first corp, agent and vessel
+ 		- implement template-random universe generation
+		- link randgen locations with stargates
+
+8/10/2014
+ * THE REMAKING
+ 		- freeze control of vessel for active agent, release on switch
+ 		- hud: agent list
+		- menu create->vessel
+		- refactor: removed agent credits, agents spend corp money instead
+		- random name generation for ships and agents
+	  - support for multiple user-owned ships
+ 		- player hud shows drop-down of user-agent selectable assets
+ * fix: NUKE doesnt remove corporation from HUD
+
+8/9/2014
+ * THE REMAKING
+  	- much refactoring
+ 		- implemented corporations (player, NPC)
+		- menu create->agent
 
 8/8/2014
+ * map: hide undiscovered map nodes
+ * track player's known locations
+ * menu: create station
+   -refactored StationModel to use StationType
  * menu: create -> factory
  * implemented FormDialog
    - support for text, strInput, intInput, labels, select

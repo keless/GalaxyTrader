@@ -6,13 +6,19 @@
 //#include js/model/FactoryModel.js
 //requires Service.get("galaxy") to have a GalaxySim object present (for location attachment)
 
+/*
+	events sent
+	[self]:"agentUpdateCorp" - {agent:this}
+	[self]:"agentUpdateVessel" - {agent:this}
+*/
+
 var AgentModel = Class.create(EventBus, {
   initialize: function($super){
 		$super("AgentModel");
     this.vessel = null;
     this.name = "Peabody Humperdink";
     this.id = "";
-    this._credits = 0;
+		this._corp = null;
     this.AiMethod = this._AIGenericNoMove.bind(this);
 		this.AiSpecialistCommodityType = null;
     this.idledLastTurn = false;
@@ -23,11 +29,10 @@ var AgentModel = Class.create(EventBus, {
   initializeWithJson: function( json ) {
     this.name = json["name"] || "Unknown Seller";
     this.id = json["id"] || uuid.v4();
-    this._credits = json["credits"] || 0;
 
     if( json["vessel"] ) {
       this.vessel = Service.get("galaxy").getVessel( json["vessel"] );
-			this.vessel.owner = this;
+			this.vessel.setOwner(this);
       console.log( this.name + " claimed vessel " + this.vessel.name );
     }
     else {
@@ -37,22 +42,49 @@ var AgentModel = Class.create(EventBus, {
 	toJson: function() {
 		var vesselId = this.vessel ? this.vessel.id : "";
 		var json = { name:this.name, id:this.id, vessel:vesselId,
-								credits:this._credits, specialistType:this.AiSpecialistCommodityType
+								 specialistType:this.AiSpecialistCommodityType
                };
     return json;
 	},
-  getNumCredits: function() {
-    return this._credits;
-  },
-	incCredits: function( delta ) {
-		this._credits += ~~(delta); //force int
-		if( this._credits < 0 ) {
-			console.log("AgentModel:incCredits - went below zero " + this._credits);
-			this._credits = 0;
+	setCorporation: function( corpModel ) {
+		if( this._corp != null ) {
+			console.log("warning: agent losing corp " + this.id);
 		}
 
-		var blockThis = this;
-		this.dispatch({evtName:"agentUpdateCredits", agent:blockThis});
+		this._corp = corpModel;
+		this.dispatch({evtName:"agentUpdateCorp", agent:this});
+	},
+	getCorporation: function() {
+		return this._corp;
+	},
+	setVessel: function( vModel ) {
+		if(this.vessel) {
+			this.vessel.setOwner(null);
+			console.log("agent " + this.name + " abandoning vessel " + vModel.name);
+		}
+
+		this.vessel = vModel;
+
+		this.dispatch({evtName:"agentUpdateVessel", agent:this});
+
+		if( this.vessel == null ) return;
+		console.log("agent "+ this.name + " claimed vessel " + vModel.name);
+	},
+	getLocation: function() {
+		if(!this.vessel) return null;
+		return this.vessel.location;
+	},
+  getNumCredits: function() {
+		if(!this._corp) return 0;
+    return this._corp.getNumCredits();
+  },
+	incCredits: function( delta ) {
+		if(!this._corp) {
+			console.log("warning: agent getting credits but has no corp " + this.name);
+			return;
+		}
+
+		this._corp.incCredits(delta);
 	},
   update: function( currTime, dt ) {
     if(!this.vessel) return;
@@ -64,9 +96,23 @@ var AgentModel = Class.create(EventBus, {
     }
   },
 
+	setIdleAI: function() {
+		this.AiMethod = this._AIIdle.bind(this);
+	},
+	setGenericAI: function() {
+		this.AiMethod = this._AIGenericNoMove.bind(this);
+	},
+
+	_AIIdle: function( currTime, dt ) {
+		//do nothing
+	},
   _AIGenericNoMove: function( currTime, dt ) {
     var location = this.vessel.location;
     var blockThis = this;
+
+		if(!this._corp) return;
+		if(!this.vessel) return;
+		var credits = this._corp.getNumCredits();
 
     //behaviors = 1) sell, 2) purchase, 3) move, 4) wait
 
@@ -76,6 +122,9 @@ var AgentModel = Class.create(EventBus, {
       //console.log( this.name + " specializing in " + this.AiSpecialistCommodityType );
     }
 
+		if( dicLength(location.factories) == 0 ) return;
+
+		//try to sell
     //returns dict of { factId1:{ cid1:{ cid, pricePerUnit, qty } .. cidN:{} } .. factIdN:{} }
     var sellChoice = null;
     var inputs = location.queryFactoryInputs(cmdyFilter);
@@ -84,6 +133,12 @@ var AgentModel = Class.create(EventBus, {
         //console.log("look at sell choice " + cid + " at " + factId )
         var amtOwned = blockThis.vessel.getCargoQty(offer.cid);
         if( amtOwned > 0 ) {
+
+					if( offer.pricePerUnit < blockThis.vessel.getCargoPurchasedVal(offer.cid) ) {
+						console.log("Avoid selling cmdy " + offer.cid + " at ppu " + offer.pricePerUnit + " when our val is " + blockThis.vessel.getCargoPurchasedVal(offer.cid));
+						return true; //continue;
+					}
+
           //found something to sell
           offer.qty = Math.min( amtOwned, offer.qty ); //cap to what we have available
 
@@ -113,6 +168,7 @@ var AgentModel = Class.create(EventBus, {
       return;
     }
 
+		//try to buy
     //returns dict of { factId:{ cid:{ cid, pricePerUnit, qty } } }
     var buyChoice = null;
     var outputs = location.queryFactoryOutputs(cmdyFilter);
@@ -122,7 +178,7 @@ var AgentModel = Class.create(EventBus, {
         var amtOwned = blockThis.vessel.getCargoQty(offer.cid);
         if( amtOwned == 0 ) { //dont buy if you already have some (todo: better logic)
           //found something to buy
-          var maxAfford = Math.floor( blockThis._credits / offer.pricePerUnit ); //force int
+          var maxAfford = Math.floor( credits / offer.pricePerUnit ); //force int
           offer.qty = Math.min( maxAfford, offer.qty ); //cap to what we can pay for
 
           if( buyChoice == null ) {

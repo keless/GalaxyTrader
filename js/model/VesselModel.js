@@ -13,7 +13,7 @@ var VesselType = Class.create({
     this.speed = 1;
     this.cargoVol = 100;
   },
-  g_types: [],
+  g_types: {},
   initializeWithJson: function(json) {
     this.name = json["name"]  || "";
     this.id = json["id"]  || "undefined_idj";
@@ -43,11 +43,11 @@ var VesselModel = Class.create(EventBus, {
     $super("VesselModel"); //initialize EventBus
     this.type = null;
     this.name = "";
-		this.owner = null;
+		this._owner = null;
     this.speed = 1;
     this.maxQty = 1;
     this._currQty = 0;
-    this._cargo = {};
+    this._cargo = {};  //dict of CommodityModel
     this.location = null;
   },
   initializeWithJson: function( json ) {
@@ -57,36 +57,40 @@ var VesselModel = Class.create(EventBus, {
     var vesselType = VesselType.get( vesselTypeId );
 
     this.type = vesselType;
-    this.name = vesselType.name;
+    this.name = json["name"] || vesselType.name;
     this.id = json["id"] || uuid.v4();
     this.speed = json["speed"] || vesselType.speed;
     this.maxQty = json["maxQty"] || vesselType.cargoVol;
     this._currQty = json["currQty"] || 0;
-    this._cargo = json["cargo"] || {}; //{ cid:"cmdyId", qty:int }
 
-		/* NOTE: its up to owners to claim vessels, because vessels are deserialized before agents
-		if( json["owner"] ) {
-      this.owner = Service.get("galaxy").getAgent( json["owner"] );
-    }
-    else {
-      this.owner = null;
-    }
-		*/
+		//xxx this._cargo = json["cargo"] || {}; //{ cid:"cmdyId", qty:int }
+		if(json["cargo"]) {
+			var blockThis = this;
+			jQuery.each(json["cargo"], function(key, value){
+				var cmdyModel = new CommodityModel();
+				cmdyModel.initializeWithJson(value);
+				blockThis._cargo[ cmdyModel.type.id ] = cmdyModel;
+			});
+		}else {
+			this._cargo = {};
+		}
 
-		/* NOTE: locations spawn vessels in deserialization and will handle attaching
-    if( json["location"] ) {
-      this.location = Service.get("galaxy").getLocation( json["location"] );
-    }
-    else {
-      this.location = null;
-    }
-		*/
+		// NOTE: its up to owners to claim vessels, because vessels are deserialized before agents
+		//this._owner
+		// NOTE: locations spawn vessels in deserialization and will handle attaching
+		//this.location
   },
 	toJson: function() {
-		var ownerId = this.owner ? this.owner.id : "";
+		var blockThis = this;
+		var cargo = {};
+		jQuery.each(this._cargo, function(key, value){
+			cargo[ value.type.id ] = value.toJson();
+		});
+
+		var ownerId = this._owner ? this._owner.id : "";
     var json = { type:this.type.id, name:this.name, id:this.id, owner:ownerId,
 								speed:this.speed, maxQty:this.maxQty, currQty:this._currQty,
-								cargo:this._cargo
+								cargo:cargo
                };
     return json;
 	},
@@ -109,28 +113,43 @@ var VesselModel = Class.create(EventBus, {
     if( !this._cargo[cid] ) {
       return 0;
     }
-    return this._cargo[cid].qty;
+    return this._cargo[cid].currQty;
   },
+	getCargoPurchasedVal: function( cid ) {
+    if( !this._cargo[cid] ) {
+      return 0;
+    }
+    return this._cargo[cid].getPurchasedVal();
+	},
   getCargo: function() {
     return this._cargo;
   },
 
+	setOwner: function( agent ) {
+		this._owner = agent;
+		this.dispatch({evtName:"updateVessel", from:this });
+	},
+	getOwner: function() {
+		return this._owner;
+	},
+
   //this will fill holds with QTY up to max, returning amt actually stored
-  //TODO: track pricePerUnit (to display to user, and for AI logic)
-  addCargo: function( cid, qty ) {
+  // tracks price per unit
+  addCargo: function( cid, qty, ppu ) {
 
     var spaceAvailable = this.maxQty - this._currQty;
     if( spaceAvailable == 0 ) return 0;
 
     //ensure entry for cargo type
     if( !this._cargo[cid] ) {
-      this._cargo[cid] = { cid:cid, qty:0 };
+			var cmdyModel = new CommodityModel();
+			cmdyModel.initializeWithJson({type:cid, maxQty:this.maxQty});
+      this._cargo[cid] = cmdyModel;
     }
 
     var amt = Math.min( qty, spaceAvailable );
 
-    this._cargo[cid].qty += amt;
-    //TODO: this._cargo[cid].pricePerUnit = ??;
+		this._cargo[cid].incQtyWithPrice(amt, ppu);
     this._currQty += amt;
 
     this.dispatch({evtName:"updateVessel", from:this });
@@ -144,18 +163,17 @@ var VesselModel = Class.create(EventBus, {
       return 0;
     }
 
-    var amt = Math.min( qty, this._cargo[cid].qty );
-    this._cargo[cid].qty -= amt;
+    var amt = Math.min( qty, this._cargo[cid].currQty );
+    this._cargo[cid].incQtyWithPrice( -1*amt, 0);
     this._currQty -= amt;
 
-		if( this._cargo[cid].qty < 1 ) {
+		if( this._cargo[cid].currQty < 1 ) {
 			delete this._cargo[cid];
 		}
 
     this.dispatch({evtName:"updateVessel", from:this });
 
     return amt;
-
   }
 });
 

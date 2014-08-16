@@ -14,6 +14,7 @@ var CommodityView = Class.create(BaseView, {
     this._qty = 0;
     this._price = 0;
     this.showPrice = true;
+		this.purchasePrice = false;
 		this.tradePrice = false;
 
     this.pbCapacity = jQuery("<div>").progressbar();
@@ -28,6 +29,15 @@ var CommodityView = Class.create(BaseView, {
     this._price = price;
     this._updateLabel();
   },
+	setSellCursor: function() {
+		this.div.css({"cursor":"url(css/images/bank.png) 15 20,default"});
+	},
+	setBuyCursor: function() {
+		this.div.css({"cursor":"url(css/images/symbol_dollar.png) 15 20,default"});
+	},
+	setTradeCursor: function() {
+		this.div.css({"cursor":"url(css/images/gavel.png) 15 20,default"});
+	},
   setQty: function( minQty, maxQty, currQty ) {
     var range = maxQty - minQty;
     var pct = ( currQty - minQty ) / range;
@@ -42,7 +52,9 @@ var CommodityView = Class.create(BaseView, {
   },
   _updateFromModel: function( cmdyModel ) {
     this._name = cmdyModel.name;
-		if( this.tradePrice ) {
+		if( this.purchasePrice ) {
+			this._price = cmdyModel.getPurchasedVal();
+		}else if( this.tradePrice ) {
 			this._price = cmdyModel.type.getAvgTradeValue();
 		} else {
 			this._price = cmdyModel.getValue();

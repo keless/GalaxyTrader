@@ -1,0 +1,33 @@
+<html>
+<head>
+    <!-- external libraries -->
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/latest/TweenMax.min.js"></script>
+    <script src="https://code.jquery.com/jquery-1.10.2.js"></script>
+    <script src="https://code.jquery.com/ui/1.11.0/jquery-ui.js"></script>
+    <link rel="stylesheet" href="css/jquery-ui.css">
+    <!--<link rel="stylesheet" href="http://code.jquery.com/ui/1.11.0/themes/black-tie/jquery-ui.css">-->
+    <link rel="stylesheet" href="css/style.css">
+    <script type="text/javascript">
+        //resolve jQuery-Prototype conflict on '$'
+        // call 'jQuery("stuff")' instead of '$("stuff")' for jQuery code
+        // or use jQuery-plugin style: (function( $ ) { $("stuff").derp(); })( jQuery );
+        jQuery.noConflict();
+    </script>
+    <style type="text/css"> body { margin: 0; padding: 0; color: #FFFFFF;
+        background-image:url('css/images/green-star-sky.jpg'); }
+    </style>
+
+    <script type="text/javascript" src="assets/common.js"></script>
+
+    <script type="text/javascript">
+        jQuery( document ).ready( function(){
+            game_create();
+        });
+    </script>
+</head>
+
+<body><div id="content"></div></body>
+<hr>
+<a href="devlog.txt" target="_blank">Dev Log</a>
+</html>

@@ -58,13 +58,13 @@ var MapNode = Class.create(BaseView, {
 	},
 	_refreshIcons: function() {
 		this.divIcons.empty();
-		if( Object.keys(this.updateTarget.factories).length > 0 ) {
+		if( dicLength(this.updateTarget.factories) > 0 ) {
 			this.divIcons.append(jQueryIcon("ui-icon-arrowthickstop-1-s"));
 		}
-		if( Object.keys(this.updateTarget.stations).length > 0 ) {
+		if( dicLength(this.updateTarget.stations) > 0 ) {
 			this.divIcons.append(jQueryIcon("ui-icon-transfer-e-w"));
 		}
-		if( Object.keys(this.updateTarget.vessels).length > 0 ) {
+		if( dicLength(this.updateTarget.vessels) > 0 ) {
 			this.divIcons.append(jQueryIcon("ui-icon-circlesmall-close"));
 		}
 	},

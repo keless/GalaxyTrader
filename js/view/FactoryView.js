@@ -64,12 +64,13 @@ var FactoryView = Class.create(BaseView, {
 
       var cmv1 = new CommodityView();
       cmv1.updateFromModel(cmm1);
+			cmv1.setSellCursor();
 			cmv1.setPrice( fModel._getPricePerUnit( value.cid, value.currQty, value.maxQty, true) ); //potentially show incentive value
       cmv1.getDiv().width(160);
 
       blockThis.divInputs.append(cmv1.getDiv());
 
-      cmv1.getDiv().click( function(event){
+      cmv1.getDiv().click( function(e){
         //console.log(" clicked input " + fModel.name + " " + value.cid );
         EventBus.ui.dispatch({evtName:"factInputClicked", cid:value.cid, factId:fModel.id});
       });
@@ -90,12 +91,13 @@ var FactoryView = Class.create(BaseView, {
 
       var cmv1 = new CommodityView();
       cmv1.updateFromModel(cmm1);
+			cmv1.setBuyCursor();
 			cmv1.setPrice( fModel._getPricePerUnit( value.cid, value.currQty, value.maxQty, false) ); //potentially show incentive value
       cmv1.getDiv().width(160);
 
       blockThis.divOutputs.append(cmv1.getDiv());
 
-      cmv1.getDiv().click( function(event){
+      cmv1.getDiv().click( function(e){
         //console.log(" clicked output " + fModel.name + " " + value.cid );
         EventBus.ui.dispatch({evtName:"factOutputClicked", cid:value.cid, factId:fModel.id });
       });
