@@ -47,13 +47,14 @@ var StationView = Class.create(BaseView, {
 
       var cmv1 = new CommodityView();
 			cmv1.tradePrice = true;
+			cmv1.setTradeCursor();
       cmv1.updateFromModel(cmm1);
       cmv1.getDiv().width(160);
 
       blockThis.divCommodities.append(cmv1.getDiv());
       blockThis.commodityViews[ value.cid ] = cmv1;
 
-      cmv1.getDiv().click( function(event){
+      cmv1.getDiv().click( function(e){
         //console.log(" clicked input " + fModel.name + " " + value.cid );
         EventBus.ui.dispatch({evtName:"tradeCmdyClicked", cid:value.cid,
                               statId:sModel.id, qty:(value.maxQty - value.currQty),

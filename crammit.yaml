@@ -1,0 +1,23 @@
+output: assets       # directory path relative to the current directory
+fingerprint: false   # add sha1 hash to the output file name
+
+js_minifier: ...     # optionally use a minifier other than slimit.
+                     # expects a shell command that uses stdin/stdout.
+js_minifier_options: # options dictionary to configure JS minifier
+  mangle: True
+  mangle_toplevel: True
+
+javascript:
+  # 'common' is a bundle name, output file will have prefix 'common'
+  common:
+    - js/*.js
+    - js/ext/*.js
+    - js/framework/*.js
+    - js/model/*.js
+    - js/view/*.js 
+    - data/*.json
+
+css:
+  base:
+    # you can use Unix shell-style wildcards in file names
+    - css/*.css

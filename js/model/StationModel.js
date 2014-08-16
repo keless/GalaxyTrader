@@ -4,9 +4,43 @@
 //#include js/framework/EventBus.js
 //#include js/model/CommodityModel.js
 
+var StationType = Class.create({
+  initialize: function() {
+    this.name = "";
+    this.id = "invalid_id";
+    this.commodities = {};  //{ "cid" : <str commodityTypeId>, "qty":<int quantity>, "maxQty":<int max> }
+  },
+  g_types: {},
+  initializeWithJson: function( json ) {
+    this.name = json["name"] || "";
+    this.id = json["id"] || "invalid_idj";
+		this.commodities = json["commodities"] || {};
+    StationType.prototype.g_types[ this.id ] = this;
+  },
+  get: function( strTypeId )
+  {
+    return g_types[strTypeId];
+  }
+});
+
+//class methods for getting types
+StationType.get = function( strTypeId )
+{
+  return StationType.prototype.g_types[ strTypeId ];
+}
+
+StationType.loadTypesWithJson = function( json )
+{
+  jQuery.each(json, function(key, value){
+    var stationType = new StationType();
+    stationType.initializeWithJson( value );
+  });
+}
+
 var StationModel = Class.create(EventBus, {
   initialize: function( $super ) {
     $super("StationModel"); //initialize EventBus
+    this.type = null;
     this.name = "";
     this.id = "";
 		this.owner = null;
@@ -18,8 +52,13 @@ var StationModel = Class.create(EventBus, {
   initializeWithJson: function( json ) {
     this.initialize();
 
-    this.name = json["name"] || "Station";
+    var stationTypeId = json["type"] || "invalid_idj";
+    var stationType = StationType.get( stationTypeId );
+
+    this.type = stationType;
+    this.name = json["name"] || stationType.name;
     this.id = json["id"] || uuid.v4();
+    this.commodities = json["commodities"] || {};
 		this._consumePeriod = json["consumePeriod"] || this._consumePeriod;
 
 
@@ -38,15 +77,18 @@ var StationModel = Class.create(EventBus, {
       this.location = null;
     }
 
-		var blockThis = this;
-		//{ "cid" : <str commodityTypeId>, "currQty":<int quantity>, "maxQty":<int maxQuantity> }
-		jQuery.each(json["commodities"], function(key, value){
-			blockThis.commodities[ value.cid ] = value;
-		});
+    //load empty storage descriptors from type
+    if( jQuery.isEmptyObject(this.commodities) && this.type && !jQuery.isEmptyObject(this.type.commodities) )
+    {
+      var blockThis = this;
+      jQuery.each( this.type.commodities, function( key, value ) {
+        blockThis.commodities[key] = { cid:value.cid, currQty:0, maxQty:value.maxQty };
+      });
+    }
 	},
   toJson: function() {
 		var ownerId = this.owner ? this.owner.id : "";
-    var json = { name:this.name, id:this.id, consumePeriod:this._consumePeriod,
+    var json = { type:this.type.id, name:this.name, id:this.id, consumePeriod:this._consumePeriod,
                 commodities:this.commodities, owner:ownerId };
     return json;
   },
@@ -131,7 +173,7 @@ var StationModel = Class.create(EventBus, {
     if( this.location ) { //if defined and not null
       var oldLocation = this.location;
       this.location = null;
-      oldLocation.removeFactory(this);
+      oldLocation.removeStation(this);
     }
     this.location = location;
   },

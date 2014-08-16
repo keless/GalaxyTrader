@@ -15,16 +15,24 @@ var TextAreaDialog = Class.create({
 		this.parent = parentHtmlElement;
     this.cancelled = false;
 	},
-  initWithTitleAndText: function( title, text, succesEvtName ) {
+  initWithTitleAndText: function( title, text, successEvtName ) {
     this.cancelled = false;
     var blockThis = this;
 
-    var ta = jQuery("<textArea class='text ui-widget-content ui-corner-all' width='100%'>");
+		var ta = jQuery("<textArea class='text ui-widget-content'>").css({width:"100%", height:"100%",
+																																			margin:0, border:0, resize:'none'});
     ta.text(text);
 
-    this.div = jQuery("<div>").append(ta);
 
+		this.innerDiv = jQuery("<div>").css({position:"absolute",
+																					left: "5px",
+																					top: "5px",
+																					right: "5px",
+																					bottom: "5px",
+																					border: "1px"});
+		this.innerDiv.append(ta);
     this.textArea = ta;
+		this.div = jQuery("<div>").append(this.innerDiv);
 
     jQuery(this.parentHtmlElement).append(this.div);
 
@@ -35,7 +43,7 @@ var TextAreaDialog = Class.create({
         Ok: function() {
 					this.done = true;
           var text = blockThis.textArea.val();
-          EventBus.ui.dispatch({evtName:succesEvtName, text:text });
+          EventBus.ui.dispatch({evtName:successEvtName, text:text });
 					jQuery(this).dialog("close");
         },
 				Cancel: function() {

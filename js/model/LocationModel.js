@@ -18,6 +18,10 @@ var LocationModel = Class.create(EventBus, {
 		this.coords = {x:0, y:0};
 
   },
+	destroy: function(){
+		//if we ever add listeners, remove them here
+		//todo: for each factory, station, vessel -- destroy
+	},
   initializeWithJson: function( json ) {
     this.name = json["name"] || "";
     this.id = json["id"] || uuid.v4();

@@ -15,7 +15,9 @@ var VesselView = Class.create(BaseView, {
     this.div.append(this.divCargo);
   },
   _updateFromModel: function( vModel ) {
-		this.lblName.text( vModel.name + ", " + vModel.owner.name );
+		var name = vModel.name;
+		if( vModel.getOwner() ) name += ", " + vModel.getOwner().name;
+		this.lblName.text( name );
     this.div.prop('title', vModel.id);
 
     var blockThis = this;
@@ -24,14 +26,10 @@ var VesselView = Class.create(BaseView, {
     blockThis.divCargo.append(jQueryIcon("ui-icon-circlesmall-close")).append("Cargo ("+vModel.getCurrentVolume()+"/"+vModel.maxQty+")");
 		//append(jQuery("<p>Cargo ("+vModel.getCurrentVolume()+"/"+vModel.maxQty+")</p>")).addClass("tg-name");
     jQuery.each(vModel.getCargo(), function(key, value){
-      var cmm1 = new CommodityModel();
-      cmm1.initializeWithJson( {type: value.cid } );
-      cmm1.currQty = value.qty;
-      cmm1.maxQty = vModel.maxQty;
 
       var cmv1 = new CommodityView();
-      cmv1.showPrice = false;
-      cmv1.updateFromModel(cmm1);
+      cmv1.purchasePrice = true;
+      cmv1.updateFromModel(value);
       cmv1.getDiv().width(160);
 
       blockThis.divCargo.append(cmv1.getDiv());

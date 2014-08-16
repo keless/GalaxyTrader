@@ -164,6 +164,7 @@ var MapView = Class.create(BaseView, {
 		this.lblName.text( "Universe" );
 
 		EventBus.ui.addListener("mapNodeClicked", this.onNodeClicked.bind(this));
+    EventBus.game.addListener("playerDiscoveredLocation", this.onDiscoveredLocation.bind(this));
 	},
 	destroy: function($super) {
 		$super();
@@ -171,6 +172,7 @@ var MapView = Class.create(BaseView, {
 		this.linkMap = {};
 
 		EventBus.ui.removeListener("mapNodeClicked", this.onNodeClicked.bind(this));
+    EventBus.game.removeListener("playerDiscoveredLocation", this.onDiscoveredLocation.bind(this));
 
 		jQuery.each( this.nodes, function(key, value){
 			value.destroy();
@@ -200,15 +202,22 @@ var MapView = Class.create(BaseView, {
 
 		var blockThis = this;
 
-    this.scrollMapTo( -1*this.w_h, -1*this.h_h); //center to zero-zero
+    var cx = this.w_h;
+		var cy = this.h_h;
 
+    //this.scrollMapTo( -1*this.w_h, -1*this.h_h, false); //center to zero-zero
+    var player = Service.get("player");
 		jQuery.each( galaxy.locations, function(key, value){
+      var isKnown = player.isLocationKnown(value.id);
+			if(!isKnown) return true; //continue; //skip over unknown location
+
 			var node = new MapNode();
 			//node.initializeWithJson(value);
 			node.updateFromModel( value, true );
 			node.setPos( node.origX - blockThis.scroll.x, node.origY - blockThis.scroll.y );
 			blockThis.div.append( node.getDiv() );
 			blockThis.nodes.push( node );
+
 
 			var from = value.id;
 			var fromLoc = value;
@@ -254,14 +263,13 @@ var MapView = Class.create(BaseView, {
     jQuery.each( this.nodes, function(key, value){
       if( value.updateTarget == locModel ) {
         value.setHighlighted(true);
-        blockThis.scrollToNode( value );
+        blockThis.scrollToNode( value, true );
         return false;
       }
-
     });
   },
-  scrollToNode: function( node ) {
-    this.scrollMapTo(  (node.origX) - this.w_h  , (node.origY) - this.h_h );
+  scrollToNode: function( node, animate ) {
+    this.scrollMapTo(  (node.origX) - this.w_h  , (node.origY) - this.h_h, animate );
   },
 	scrollMapBy: function( x, y, animate ) {
 		this.scroll.x += x;
@@ -273,11 +281,9 @@ var MapView = Class.create(BaseView, {
 		this.scroll.x = x;
 		this.scroll.y = y;
 
-		this._updateAfterScroll();
+		this._updateAfterScroll( animate );
 	},
-	_updateAfterScroll: function(){
-
-		//TODO: setup tween
+	_updateAfterScroll: function( animate ){
 		var cx = this.w_h;
 		var cy = this.h_h;
 
@@ -304,16 +310,23 @@ var MapView = Class.create(BaseView, {
 			if( x >= blockThis.w - margin ) x = blockThis.w - margin;
 			if( y < margin ) y = margin;
 			if( y >= blockThis.h - margin ) y = blockThis.h - margin;
-			value.setPos( x - value.w_h, y - value.h_h, true );
+			value.setPos( x - value.w_h, y - value.h_h, animate );
 
-			value.setScale( scale, true );
+			value.setScale( scale, animate );
 		});
 
 
 		this.lblName.text( "Universe (" + (this.scroll.x + this.w_h )+","+ (this.scroll.y+this.h_h)+")");
 	},
 	onNodeClicked: function(evt){
-    this.scrollToNode( evt.node );
+    this.scrollToNode( evt.node, true );
     //evt.node.setHighlighted(true);
-	}
+	},
+  onDiscoveredLocation: function(evt){
+    //reload to render new location
+    //TODO: optimize-- only add new MapNode and DotNodes
+
+    var galaxy = Service.get("galaxy");
+    this.initializeWithGalaxySim( galaxy );
+  }
 });
