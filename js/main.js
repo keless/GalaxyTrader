@@ -7,6 +7,7 @@ game_create = function()
   VesselType.loadTypesWithJson( data["vesselTypes"] );
 
 	//instanciate singletons
+	new AudioManager();
 	window.hud = new PlayerHud();
   window.map = new MapView();
 
@@ -203,9 +204,11 @@ game_create = function()
 		if( dialog.sellMode ){
 			//vid, lid, fid, cid, qty, ppu, buyAgent - diff order than BUY mode
 			window.galaxy.actionSellFromVesselToFactory(vid, lid, fid, cid, qty, ppu, agent );
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_sell.mp3"});
 		}else {
 			//lid, fid, vid, cid, qty, ppu, buyAgent - diff order than SELL mode
 			window.galaxy.actionSellToVesselFromFactory(vid, lid, fid, cid, qty, ppu, agent);
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_buy.mp3"});
 		}
 
     window.currentDialog = null;
@@ -225,9 +228,11 @@ game_create = function()
 		if( dialog.sellMode ){
 			//vid, lid, fid, cid, qty, ppu, buyAgent - diff order than BUY mode
 			window.galaxy.actionSellFromVesselToStation(vid, lid, sid, cid, qty, ppu, agent );
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_sell.mp3"});
 		}else {
 			//lid, fid, vid, cid, qty, ppu, buyAgent - diff order than SELL mode
 			window.galaxy.actionSellToVesselFromStation(vid, lid, sid, cid, qty, ppu, agent);
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_buy.mp3"});
 		}
 
     window.currentDialog = null;

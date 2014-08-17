@@ -49,3 +49,4 @@ EventBus.get = function( strBusName )
 //default channels
 EventBus.game = EventBus.get("game");
 EventBus.ui = EventBus.get("ui");
+EventBus.sfx = EventBus.get("sfx");

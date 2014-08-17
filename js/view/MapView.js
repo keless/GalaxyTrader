@@ -209,7 +209,18 @@ var MapView = Class.create(BaseView, {
     var player = Service.get("player");
 		jQuery.each( galaxy.locations, function(key, value){
       var isKnown = player.isLocationKnown(value.id);
-			if(!isKnown) return true; //continue; //skip over unknown location
+			var isAdjacent = false;
+			if(!isKnown) {
+				//check if one of the adjacents is known
+				jQuery.each(value.destinations, function(key, value){
+					if(player.isLocationKnown(value)) {
+						isAdjacent = true;
+						return false; //break;
+					}
+				});
+
+				if(!isAdjacent) return true; //continue; //skip over unknown location
+			}
 
 			var node = new MapNode();
 			//node.initializeWithJson(value);
@@ -218,16 +229,18 @@ var MapView = Class.create(BaseView, {
 			blockThis.div.append( node.getDiv() );
 			blockThis.nodes.push( node );
 
+			//dont add links from adjacent-only locations
+			if(isKnown) {
+				var from = value.id;
+				var fromLoc = value;
+				jQuery.each(value.destinations, function(k, destId) {
+					var toLoc = Service.get("galaxy").getLocation( destId );
+					var to = toLoc.id;
+					var fromTo = uniqueFromTo(from, to);
 
-			var from = value.id;
-			var fromLoc = value;
-			jQuery.each(value.destinations, function(k, destId) {
-				var toLoc = Service.get("galaxy").getLocation( destId );
-				var to = toLoc.id;
-				var fromTo = uniqueFromTo(from, to);
-
-				blockThis.linkMap[ fromTo ] = { from:new Vec2D( fromLoc.coords.x, fromLoc.coords.y ), to:new Vec2D( toLoc.coords.x, toLoc.coords.y ) };
-			});
+					blockThis.linkMap[ fromTo ] = { from:new Vec2D( fromLoc.coords.x, fromLoc.coords.y ), to:new Vec2D( toLoc.coords.x, toLoc.coords.y ) };
+				});
+			}
 		});
 
 		//todo: create link dots

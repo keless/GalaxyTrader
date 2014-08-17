@@ -117,6 +117,8 @@ var LocationView = Class.create(BaseView, {
 
 		blockThis.accVesselsContent.append(vv1.getDiv());
 		blockThis.vesselViews.push(vv1);
+
+		EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_teleportIn.mp3"});
 	},
   onVesselRemoved: function( evt ) {
 		var vesselModel = evt.vessel;
@@ -130,5 +132,7 @@ var LocationView = Class.create(BaseView, {
 				return false; //break;
 			}
 		});
+
+		EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_teleportOut.mp3"});
   }
 });

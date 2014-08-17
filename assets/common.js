@@ -7,6 +7,7 @@ game_create = function()
   VesselType.loadTypesWithJson( data["vesselTypes"] );
 
 	//instanciate singletons
+	new AudioManager();
 	window.hud = new PlayerHud();
   window.map = new MapView();
 
@@ -203,9 +204,11 @@ game_create = function()
 		if( dialog.sellMode ){
 			//vid, lid, fid, cid, qty, ppu, buyAgent - diff order than BUY mode
 			window.galaxy.actionSellFromVesselToFactory(vid, lid, fid, cid, qty, ppu, agent );
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_sell.mp3"});
 		}else {
 			//lid, fid, vid, cid, qty, ppu, buyAgent - diff order than SELL mode
 			window.galaxy.actionSellToVesselFromFactory(vid, lid, fid, cid, qty, ppu, agent);
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_buy.mp3"});
 		}
 
     window.currentDialog = null;
@@ -225,9 +228,11 @@ game_create = function()
 		if( dialog.sellMode ){
 			//vid, lid, fid, cid, qty, ppu, buyAgent - diff order than BUY mode
 			window.galaxy.actionSellFromVesselToStation(vid, lid, sid, cid, qty, ppu, agent );
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_sell.mp3"});
 		}else {
 			//lid, fid, vid, cid, qty, ppu, buyAgent - diff order than SELL mode
 			window.galaxy.actionSellToVesselFromStation(vid, lid, sid, cid, qty, ppu, agent);
+			EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_buy.mp3"});
 		}
 
     window.currentDialog = null;
@@ -963,6 +968,41 @@ init_menu_handlers = function()
   }
 }).call(this);
 ;//#include https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js
+
+/*
+
+	event handled:
+		[sfx]:"play":{file:"audio/file.mp3"}
+
+	events sent:
+
+*/
+
+var AudioManager = Class.create({
+  initialize : function( ) {
+		console.log("AudioManager created");
+
+
+		Service.add("audio", this);
+
+		EventBus.sfx.addListener("play", this.onSfxPlay.bind(this));
+	},
+	g_sfx: {},
+	onSfxPlay: function(evt) {
+		var file = evt.file;
+		if( !AudioManager.prototype.g_sfx[ file ] ) {
+			AudioManager.prototype.g_sfx[ file ] = new Audio(file);
+		}
+
+		var audio = AudioManager.prototype.g_sfx[ evt.file ];
+		if(!audio.ended) {
+			console.log("cutting sfx short " + file);
+		}
+		audio.play();
+	}
+
+});
+;//#include https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js
 //#include https://code.jquery.com/ui/1.11.0/jquery-ui.min.js
 //NOTE: $() is reserved for Prototype, jQuery must use jQuery() format
 
@@ -1060,6 +1100,7 @@ EventBus.get = function( strBusName )
 //default channels
 EventBus.game = EventBus.get("game");
 EventBus.ui = EventBus.get("ui");
+EventBus.sfx = EventBus.get("sfx");
 ;//#include https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js
 //#include https://code.jquery.com/ui/1.11.0/jquery-ui.min.js
 //NOTE: $() is reserved for Prototype, jQuery must use jQuery() format
@@ -1576,7 +1617,7 @@ var AgentModel = Class.create(EventBus, {
         if( amtOwned > 0 ) {
 
 					if( offer.pricePerUnit < blockThis.vessel.getCargoPurchasedVal(offer.cid) ) {
-						console.log("Avoid selling cmdy " + offer.cid + " at ppu " + offer.pricePerUnit + " when our val is " + blockThis.vessel.getCargoPurchasedVal(offer.cid));
+						//console.log("Avoid selling cmdy " + offer.cid + " at ppu " + offer.pricePerUnit + " when our val is " + blockThis.vessel.getCargoPurchasedVal(offer.cid));
 						return true; //continue;
 					}
 
@@ -3825,6 +3866,8 @@ var LocationView = Class.create(BaseView, {
 
 		blockThis.accVesselsContent.append(vv1.getDiv());
 		blockThis.vesselViews.push(vv1);
+
+		EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_teleportIn.mp3"});
 	},
   onVesselRemoved: function( evt ) {
 		var vesselModel = evt.vessel;
@@ -3838,6 +3881,8 @@ var LocationView = Class.create(BaseView, {
 				return false; //break;
 			}
 		});
+
+		EventBus.sfx.dispatch({evtName:"play", file:"audio/sfx_teleportOut.mp3"});
   }
 });
 ;//#include https://ajax.googleapis.com/ajax/libs/prototype/1.7.2.0/prototype.js
@@ -4179,7 +4224,18 @@ var MapView = Class.create(BaseView, {
     var player = Service.get("player");
 		jQuery.each( galaxy.locations, function(key, value){
       var isKnown = player.isLocationKnown(value.id);
-			if(!isKnown) return true; //continue; //skip over unknown location
+			var isAdjacent = false;
+			if(!isKnown) {
+				//check if one of the adjacents is known
+				jQuery.each(value.destinations, function(key, value){
+					if(player.isLocationKnown(value)) {
+						isAdjacent = true;
+						return false; //break;
+					}
+				});
+
+				if(!isAdjacent) return true; //continue; //skip over unknown location
+			}
 
 			var node = new MapNode();
 			//node.initializeWithJson(value);
@@ -4188,16 +4244,18 @@ var MapView = Class.create(BaseView, {
 			blockThis.div.append( node.getDiv() );
 			blockThis.nodes.push( node );
 
+			//dont add links from adjacent-only locations
+			if(isKnown) {
+				var from = value.id;
+				var fromLoc = value;
+				jQuery.each(value.destinations, function(k, destId) {
+					var toLoc = Service.get("galaxy").getLocation( destId );
+					var to = toLoc.id;
+					var fromTo = uniqueFromTo(from, to);
 
-			var from = value.id;
-			var fromLoc = value;
-			jQuery.each(value.destinations, function(k, destId) {
-				var toLoc = Service.get("galaxy").getLocation( destId );
-				var to = toLoc.id;
-				var fromTo = uniqueFromTo(from, to);
-
-				blockThis.linkMap[ fromTo ] = { from:new Vec2D( fromLoc.coords.x, fromLoc.coords.y ), to:new Vec2D( toLoc.coords.x, toLoc.coords.y ) };
-			});
+					blockThis.linkMap[ fromTo ] = { from:new Vec2D( fromLoc.coords.x, fromLoc.coords.y ), to:new Vec2D( toLoc.coords.x, toLoc.coords.y ) };
+				});
+			}
 		});
 
 		//todo: create link dots

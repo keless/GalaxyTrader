@@ -1,5 +1,7 @@
 
 TODO:
+ * fix map ui: scaled tween doesnt fully complete if user manually panned before changing locations
+ * UI: add bgm+sfx on/off buttons, and persist their values
  * AI: dont buy when price is above median (advanced: find a place to sell before buying)
  * AI: consider trade stations for buy/sell actions too
  * fix AI: can get stuck with expensive goods and nowhere to sell-- then what? (cut losses and sell to station?)
@@ -11,14 +13,17 @@ TODO:
  * idea: inter-cluster worm holes as paid toll gates
  * idea: factions
  		- show faction zone indicators on map
- * idea: implement government taxing system
- 	- implement tax discounts
- * improvement: implement name registry to ensure uniqueness
+ * idea: implement government taxing system (needs Factions code, and Calendar?)
+ 	- implement corporate tax discounts
+ * improvement: implement name registry to ensure uniqueness (or just add a shit ton more names so collisions are statistically unlikely!)
  * improvement: give commodity descriptions, show tooltip when hovering?
 
 NOTE: crammit -c crammit.yaml
 
 8/16/2014
+ * ui: click to move to undiscovered adjacent locations (show unknown but adjacent)
+ * audio: sfx added - warp in, warp out, buy, sell
+ * audio: background music
  * UI: when changing active agent, move location to that agent
  * AI: only sell at >= value
  * fix: FTUE step 2 triggered twice
