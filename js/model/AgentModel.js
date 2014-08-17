@@ -135,7 +135,7 @@ var AgentModel = Class.create(EventBus, {
         if( amtOwned > 0 ) {
 
 					if( offer.pricePerUnit < blockThis.vessel.getCargoPurchasedVal(offer.cid) ) {
-						console.log("Avoid selling cmdy " + offer.cid + " at ppu " + offer.pricePerUnit + " when our val is " + blockThis.vessel.getCargoPurchasedVal(offer.cid));
+						//console.log("Avoid selling cmdy " + offer.cid + " at ppu " + offer.pricePerUnit + " when our val is " + blockThis.vessel.getCargoPurchasedVal(offer.cid));
 						return true; //continue;
 					}
 
